@@ -12,7 +12,16 @@ const routes = [
     component: () => import('src/pages/CabinetPage.vue'),
   },
   {
-    path: '/:catchAll(.*)*', // Обработчик ошибок
+    path: '/questions',
+    component: () => import('src/pages/QuestionsPage.vue'),
+  },
+  {
+    path: '/question/:id',
+    component: () => import('src/pages/QuestionPage.vue'),
+    props: true, // передаем параметр id как пропс
+  },
+  {
+    path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),
   },
 ]

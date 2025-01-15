@@ -12,6 +12,9 @@
         <RouterLink to="/home" class="text-gray-700 hover:text-blue-500 transition">
           Домашняя
         </RouterLink>
+        <RouterLink to="/questions" class="text-gray-700 hover:text-blue-500 transition">
+          Опросники
+        </RouterLink>
       </nav>
     </div>
   </header>
