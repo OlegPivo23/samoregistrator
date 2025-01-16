@@ -48,7 +48,6 @@ const switchForm = (formName) => {
 <template>
   <div class="flex justify-center items-center min-h-screen bg-gray-100">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
-      <!-- Форма авторизации -->
       <form v-if="activeForm === 'login'" @submit.prevent="handleSubmit" class="space-y-4">
         <h2>Войти</h2>
         <div>
@@ -84,7 +83,6 @@ const switchForm = (formName) => {
         </div>
       </form>
 
-      <!-- Форма регистрации -->
       <form v-if="activeForm === 'register'" @submit.prevent="handleSubmit" class="space-y-4">
         <h2>Регистрация</h2>
         <div>
@@ -142,7 +140,6 @@ const switchForm = (formName) => {
         </div>
       </form>
 
-      <!-- Форма восстановления пароля -->
       <form v-if="activeForm === 'forgot'" @submit.prevent="handleSubmit" class="space-y-4">
         <h2>Восстановление пароля</h2>
         <div>
