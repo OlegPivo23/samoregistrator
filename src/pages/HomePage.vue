@@ -20,7 +20,6 @@ const questions = ref([
   },
 ])
 
-// Обработка нажатия на кнопку "Отправить"
 const submitAnswers = () => {
   console.log('Ответы пользователя:', questions.value)
   alert('Ответы сохранены! Проверьте консоль для подробностей.')
@@ -31,10 +30,7 @@ const submitAnswers = () => {
   <MainLayout>
     <div class="flex justify-center items-center min-h-screen bg-gray-100 p-4">
       <div class="max-w-3xl w-full p-6 bg-white rounded-lg shadow-md space-y-6">
-        <!-- Заголовок -->
         <div class="text-center text-2xl font-bold text-gray-700">Вопросы и ответы</div>
-
-        <!-- Список вопросов -->
         <div class="space-y-4">
           <div
             v-for="(q, index) in questions"
@@ -55,8 +51,6 @@ const submitAnswers = () => {
             </div>
           </div>
         </div>
-
-        <!-- Кнопка отправки -->
         <div class="text-center">
           <button
             @click="submitAnswers"

@@ -1,31 +1,140 @@
+<template>
+  <div class="flex justify-center items-center min-h-screen bg-gray-100">
+    <div class="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
+      <form @submit.prevent="handleSubmit" class="space-y-2">
+        <h2
+          v-if="activeForm === 'login'"
+          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
+        >
+          Войти
+        </h2>
+        <h2
+          v-if="activeForm === 'register'"
+          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
+        >
+          Регистрация
+        </h2>
+        <h2
+          v-if="activeForm === 'forgot'"
+          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
+        >
+          Восстановление пароля
+        </h2>
+
+        <div v-for="(field, index) in formConfigurations[activeForm]" :key="index">
+          <label :for="field.model" class="block text-sm font-medium text-gray-700 mb-1">
+            {{ field.label }}
+          </label>
+          <q-input
+            v-model="formFields[field.model]"
+            :type="field.type"
+            :id="field.model"
+            class="w-full"
+            :error="!!errors[field.error]"
+            :error-message="errors[field.error]"
+            :label="field.label"
+            outlined
+          />
+        </div>
+
+        <div>
+          <q-btn
+            :disabled="!isValid"
+            type="submit"
+            :label="
+              activeForm === 'login'
+                ? 'Войти'
+                : activeForm === 'register'
+                  ? 'Зарегистрироваться'
+                  : 'Восстановить пароль'
+            "
+            color="primary"
+            class="w-full"
+          />
+        </div>
+      </form>
+
+      <div
+        class="text-center space-y-2 mt-4"
+        v-for="(button, index) in buttonConfigurations[activeForm]"
+        :key="index"
+      >
+        <q-btn
+          @click="switchForm(button.targetForm)"
+          flat
+          :label="button.label"
+          color="primary"
+          class="w-full"
+        />
+      </div>
+    </div>
+  </div>
+</template>
 <script setup>
 import { ref, computed } from 'vue'
 import { QInput, QBtn } from 'quasar'
 
-const activeForm = ref('login') // Хранит активную форму: 'login', 'register', 'forgot'
+const activeForm = ref('login')
 
-const name = ref('')
-const password = ref('')
-const confirmPassword = ref('')
-const email = ref('')
+const formConfigurations = ref({
+  login: [
+    { label: 'Имя', type: 'text', model: 'name', error: 'nameError' },
+    { label: 'Пароль', type: 'password', model: 'password', error: 'passwordError' },
+  ],
+  register: [
+    { label: 'Имя', type: 'text', model: 'name', error: 'nameError' },
+    { label: 'Пароль', type: 'password', model: 'password', error: 'passwordError' },
+    {
+      label: 'Подтвердите пароль',
+      type: 'password',
+      model: 'confirmPassword',
+      error: 'confirmPasswordError',
+    },
+  ],
+  forgot: [{ label: 'Email', type: 'email', model: 'email', error: 'emailError' }],
+})
 
-const nameError = ref('')
-const passwordError = ref('')
-const emailError = ref('')
-const confirmPasswordError = ref('')
+const formFields = ref({
+  name: '',
+  password: '',
+  confirmPassword: '',
+  email: '',
+})
+
+const errors = ref({
+  nameError: '',
+  passwordError: '',
+  confirmPasswordError: '',
+  emailError: '',
+})
+
+const buttonConfigurations = ref({
+  login: [
+    { label: 'Забыли пароль?', targetForm: 'forgot' },
+    { label: 'Нет аккаунта? Регистрация', targetForm: 'register' },
+  ],
+  forgot: [
+    { label: 'Уже вспомнили пароль? Войти', targetForm: 'login' },
+    { label: 'Нет аккаунта? Регистрация', targetForm: 'register' },
+  ],
+  register: [
+    { label: 'Уже есть аккаунт? Войти', targetForm: 'login' },
+    { label: 'Забыли пароль?', targetForm: 'forgot' },
+  ],
+})
 
 const isValid = computed(() => {
   if (activeForm.value === 'login') {
-    return name.value && password.value
+    return formFields.value.name && formFields.value.password
   } else if (activeForm.value === 'register') {
     return (
-      name.value &&
-      password.value &&
-      confirmPassword.value &&
-      password.value === confirmPassword.value
+      formFields.value.name &&
+      formFields.value.password &&
+      formFields.value.confirmPassword &&
+      formFields.value.password === formFields.value.confirmPassword
     )
   } else if (activeForm.value === 'forgot') {
-    return email.value
+    return formFields.value.email
   }
   return false
 })
@@ -44,195 +153,3 @@ const switchForm = (formName) => {
   activeForm.value = formName
 }
 </script>
-
-<template>
-  <div class="flex justify-center items-center min-h-screen bg-gray-100">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
-      <form v-if="activeForm === 'login'" @submit.prevent="handleSubmit" class="space-y-4">
-        <h2>Войти</h2>
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700">Имя</label>
-          <q-input
-            v-model="name"
-            type="text"
-            id="name"
-            class="mt-1 w-full"
-            :error="!!nameError"
-            :error-message="nameError"
-            label="Имя"
-            outlined
-          />
-        </div>
-
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
-          <q-input
-            v-model="password"
-            type="password"
-            id="password"
-            class="mt-1 w-full"
-            :error="!!passwordError"
-            :error-message="passwordError"
-            label="Пароль"
-            outlined
-          />
-        </div>
-
-        <div>
-          <q-btn :disabled="!isValid" type="submit" label="Войти" color="primary" class="w-full" />
-        </div>
-      </form>
-
-      <form v-if="activeForm === 'register'" @submit.prevent="handleSubmit" class="space-y-4">
-        <h2>Регистрация</h2>
-        <div>
-          <label for="name" class="block text-sm font-medium text-gray-700">Имя</label>
-          <q-input
-            v-model="name"
-            type="text"
-            id="name"
-            class="mt-1 w-full"
-            :error="!!nameError"
-            :error-message="nameError"
-            label="Имя"
-            outlined
-          />
-        </div>
-
-        <div>
-          <label for="password" class="block text-sm font-medium text-gray-700">Пароль</label>
-          <q-input
-            v-model="password"
-            type="password"
-            id="password"
-            class="mt-1 w-full"
-            :error="!!passwordError"
-            :error-message="passwordError"
-            label="Пароль"
-            outlined
-          />
-        </div>
-
-        <div>
-          <label for="confirmPassword" class="block text-sm font-medium text-gray-700"
-            >Подтвердите пароль</label
-          >
-          <q-input
-            v-model="confirmPassword"
-            type="password"
-            id="confirmPassword"
-            class="mt-1 w-full"
-            :error="!!confirmPasswordError"
-            :error-message="confirmPasswordError"
-            label="Подтвердите пароль"
-            outlined
-          />
-        </div>
-
-        <div>
-          <q-btn
-            :disabled="!isValid"
-            type="submit"
-            label="Зарегистрироваться"
-            color="primary"
-            class="w-full"
-          />
-        </div>
-      </form>
-
-      <form v-if="activeForm === 'forgot'" @submit.prevent="handleSubmit" class="space-y-4">
-        <h2>Восстановление пароля</h2>
-        <div>
-          <label for="email" class="block text-sm font-medium text-gray-700">Email</label>
-          <q-input
-            v-model="email"
-            type="email"
-            id="email"
-            class="mt-1 w-full"
-            :error="!!emailError"
-            :error-message="emailError"
-            label="Email"
-            outlined
-          />
-        </div>
-
-        <div>
-          <q-btn
-            :disabled="!isValid"
-            type="submit"
-            label="Восстановить пароль"
-            color="primary"
-            class="w-full"
-          />
-        </div>
-      </form>
-
-      <div v-if="activeForm === 'login'">
-        <div class="text-center mt-4">
-          <q-btn @click="switchForm('forgot')" flat label="Забыли пароль?" color="primary" />
-        </div>
-        <div class="text-center mt-4">
-          <q-btn
-            @click="switchForm('register')"
-            flat
-            label="Нет аккаунта? Регистрация"
-            color="primary"
-          />
-        </div>
-      </div>
-
-      <div v-if="activeForm === 'forgot'">
-        <div class="text-center mt-4">
-          <q-btn
-            @click="switchForm('login')"
-            flat
-            label="Уже вспомнили пароль? Войти"
-            color="primary"
-          />
-        </div>
-        <div class="text-center mt-4">
-          <q-btn
-            @click="switchForm('register')"
-            flat
-            label="Нет аккаунта? Регистрация"
-            color="primary"
-          />
-        </div>
-      </div>
-
-      <div v-if="activeForm === 'register'">
-        <div class="text-center mt-4">
-          <q-btn
-            @click="switchForm('login')"
-            flat
-            label="Уже есть аккаунт? Войти"
-            color="primary"
-          />
-        </div>
-        <div class="text-center mt-4">
-          <q-btn @click="switchForm('forgot')" flat label="Забыли пароль?" color="primary" />
-        </div>
-      </div>
-    </div>
-  </div>
-</template>
-
-<style scoped>
-h2 {
-  font-size: 1.5rem;
-  font-weight: 600;
-  color: #333;
-  text-align: center;
-  margin-bottom: 1rem;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  transition:
-    color 0.3s ease-in-out,
-    transform 0.3s ease-in-out;
-}
-
-h2:hover {
-  color: #007aff;
-  transform: translateY(-5px);
-}
-</style>
