@@ -145,9 +145,9 @@ export default defineConfig((/* ctx */) => {
 
       extendManifestJson(json) {
         Object.assign(json, {
-          name: 'My PWA App',
-          short_name: 'PWA App',
-          description: 'Описание вашего PWA',
+          name: 'Саморегистратор',
+          short_name: 'samoregistrator',
+          description: 'Приложение саморегистратор',
           theme_color: '#027be3',
           background_color: '#ffffff',
           display: 'standalone',
