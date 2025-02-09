@@ -2,26 +2,11 @@
   <div class="flex justify-center items-center min-h-screen bg-gray-100">
     <div class="bg-white p-6 rounded-lg shadow-lg w-96 space-y-4">
       <form @submit.prevent="handleSubmit" class="space-y-2">
-        <h2
-          v-if="activeForm === 'login'"
-          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
-        >
-          Войти
-        </h2>
-        <h2
-          v-if="activeForm === 'register'"
-          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
-        >
-          Регистрация
-        </h2>
-        <h2
-          v-if="activeForm === 'forgot'"
-          class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide"
-        >
-          Восстановление пароля
+        <h2 class="text-xl font-semibold text-center text-gray-800 uppercase tracking-wide">
+          {{ formTitle }}
         </h2>
 
-        <div v-for="(field, index) in formConfigurations[activeForm]" :key="index">
+        <div v-for="(field, index) in currentFormConfig.fields" :key="index">
           <label :for="field.model" class="block text-sm font-medium text-gray-700 mb-1">
             {{ field.label }}
           </label>
@@ -34,6 +19,7 @@
             :error-message="errors[field.error]"
             :label="field.label"
             outlined
+            clearable
           />
         </div>
 
@@ -41,13 +27,7 @@
           <q-btn
             :disabled="!isValid"
             type="submit"
-            :label="
-              activeForm === 'login'
-                ? 'Войти'
-                : activeForm === 'register'
-                  ? 'Зарегистрироваться'
-                  : 'Восстановить пароль'
-            "
+            :label="submitButtonLabel"
             color="primary"
             class="w-full"
           />
@@ -56,7 +36,7 @@
 
       <div
         class="text-center space-y-2 mt-4"
-        v-for="(button, index) in buttonConfigurations[activeForm]"
+        v-for="(button, index) in currentFormConfig.buttons"
         :key="index"
       >
         <q-btn
@@ -70,86 +50,18 @@
     </div>
   </div>
 </template>
+
 <script setup>
-import { ref, computed } from 'vue'
-import { QInput, QBtn } from 'quasar'
+import { useForm } from 'src/composables/useForm'
 
-const activeForm = ref('login')
-
-const formConfigurations = ref({
-  login: [
-    { label: 'Имя', type: 'text', model: 'name', error: 'nameError' },
-    { label: 'Пароль', type: 'password', model: 'password', error: 'passwordError' },
-  ],
-  register: [
-    { label: 'Имя', type: 'text', model: 'name', error: 'nameError' },
-    { label: 'Пароль', type: 'password', model: 'password', error: 'passwordError' },
-    {
-      label: 'Подтвердите пароль',
-      type: 'password',
-      model: 'confirmPassword',
-      error: 'confirmPasswordError',
-    },
-  ],
-  forgot: [{ label: 'Email', type: 'email', model: 'email', error: 'emailError' }],
-})
-
-const formFields = ref({
-  name: '',
-  password: '',
-  confirmPassword: '',
-  email: '',
-})
-
-const errors = ref({
-  nameError: '',
-  passwordError: '',
-  confirmPasswordError: '',
-  emailError: '',
-})
-
-const buttonConfigurations = ref({
-  login: [
-    { label: 'Забыли пароль?', targetForm: 'forgot' },
-    { label: 'Нет аккаунта? Регистрация', targetForm: 'register' },
-  ],
-  forgot: [
-    { label: 'Уже вспомнили пароль? Войти', targetForm: 'login' },
-    { label: 'Нет аккаунта? Регистрация', targetForm: 'register' },
-  ],
-  register: [
-    { label: 'Уже есть аккаунт? Войти', targetForm: 'login' },
-    { label: 'Забыли пароль?', targetForm: 'forgot' },
-  ],
-})
-
-const isValid = computed(() => {
-  if (activeForm.value === 'login') {
-    return formFields.value.name && formFields.value.password
-  } else if (activeForm.value === 'register') {
-    return (
-      formFields.value.name &&
-      formFields.value.password &&
-      formFields.value.confirmPassword &&
-      formFields.value.password === formFields.value.confirmPassword
-    )
-  } else if (activeForm.value === 'forgot') {
-    return formFields.value.email
-  }
-  return false
-})
-
-const handleSubmit = () => {
-  if (activeForm.value === 'login') {
-    alert('Вы вошли в систему!')
-  } else if (activeForm.value === 'register') {
-    alert('Вы зарегистрировались!')
-  } else if (activeForm.value === 'forgot') {
-    alert('Инструкция по восстановлению пароля отправлена на ваш email!')
-  }
-}
-
-const switchForm = (formName) => {
-  activeForm.value = formName
-}
+const {
+  formFields,
+  errors,
+  currentFormConfig,
+  formTitle,
+  submitButtonLabel,
+  isValid,
+  handleSubmit,
+  switchForm,
+} = useForm()
 </script>
