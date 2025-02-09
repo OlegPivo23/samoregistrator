@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <linearGradient id="grad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#42a5f5" />
+      <stop offset="100%" stop-color="#1976d2" />
+    </linearGradient>
+  </defs>
+  
+  <g transform="translate(2 2)">
+    <!-- Основной круг -->
+    <circle cx="30" cy="30" r="30" fill="url(#grad)" opacity="0.9"/>
+    
+    <!-- Абстрактная форма -->
+    <path fill="#fff" d="M30 18a2 2 0 0 1 2 2v8h8a2 2 0 0 1 0 4h-8v8a2 2 0 0 1-4 0v-8h-8a2 2 0 0 1 0-4h8v-8a2 2 0 0 1 2-2z" 
+          transform="rotate(45 30 30)" opacity="0.9"/>
+    
+    <!-- Декортивные элементы -->
+    <g stroke="#fff" stroke-width="2" fill="none">
+      <circle cx="30" cy="30" r="24" opacity="0.3"/>
+      <path d="M30 12a18 18 0 0 1 18 18" opacity="0.5" stroke-linecap="round"/>
+    </g>
+  </g>
+</svg>
