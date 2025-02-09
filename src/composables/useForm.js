@@ -1,5 +1,5 @@
 import { ref, computed } from 'vue'
-import { formConfigurations } from 'src/components/forms/hooks/formConfig'
+import { formConfigurations } from 'src/configs/formConfig'
 
 export const useForm = (initialForm = 'login') => {
   const activeForm = ref(initialForm)
