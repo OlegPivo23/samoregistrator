@@ -8,8 +8,13 @@ const formData = ref({
 })
 
 const contactFields = ref([
-  { label: 'Email', model: 'email', type: 'email' },
-  { label: 'Телефон', model: 'phone', type: 'text' },
+  {
+    label: 'Email',
+    model: 'email',
+    type: 'email',
+    rules: [(val) => (val && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val)) || 'Некорректный email'],
+  },
+  { label: 'Телефон', model: 'phone', type: 'text', mask: '+ # (###) ###-##-##' },
 ])
 
 const saveContactInfo = () => {
@@ -31,6 +36,8 @@ const saveContactInfo = () => {
         class="mt-1 w-full"
         :label="field.label"
         outlined
+        :mask="field.mask"
+        :rules="field.rules"
       />
     </div>
 

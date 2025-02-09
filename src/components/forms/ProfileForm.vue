@@ -9,8 +9,21 @@ const formData = ref({
 })
 
 const profileFields = ref([
-  { label: 'Имя', model: 'name', type: 'text' },
-  { label: 'Новый пароль', model: 'password', type: 'password' },
+  {
+    label: 'Имя',
+    model: 'name',
+    type: 'text',
+    rules: [
+      (val) => (val && val.length > 2) || 'Имя должно содержать более 2 символов',
+      (val) => /^[a-zA-Zа-яА-Я\s]*$/.test(val) || 'Имя должно содержать только буквы и пробелы',
+    ],
+  },
+  {
+    label: 'Новый пароль',
+    model: 'password',
+    type: 'password',
+    rules: [(val) => (val && val.length > 6) || 'Пароль должен содержать более 6 символов'],
+  },
   { label: 'Подтвердите пароль', model: 'confirmPassword', type: 'password' },
 ])
 
@@ -38,6 +51,7 @@ const saveProfile = () => {
         class="mt-1 w-full"
         :label="field.label"
         outlined
+        :rules="field.rules"
       />
     </div>
 
