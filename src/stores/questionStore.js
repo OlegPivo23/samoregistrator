@@ -48,6 +48,8 @@ export const useQuestionStore = defineStore('questionStore', {
       this.error = null
       try {
         const res = await fetchQuestionDetailsService(questionId)
+        console.log('страница вопроса', res)
+
         if (res) {
           this.question = res.data || []
           this.cashedQuestion = res.data || []
