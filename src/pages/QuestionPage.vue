@@ -13,7 +13,6 @@
             <h3 class="text-h6">{{ question.body }}</h3>
             <p class="text-body2">{{ question.note }}</p>
 
-            <!-- Для одиночного выбора -->
             <q-option-group
               v-if="question.question_type === 'ONE_O'"
               :options="getOptions(question)"
@@ -22,7 +21,6 @@
               class="q-mt-sm"
             />
 
-            <!-- Для множественного выбора -->
             <q-option-group
               v-else-if="question.question_type === 'MUL_O'"
               :options="getOptions(question)"

@@ -6,7 +6,6 @@ export const useQuestionStore = defineStore('questionStore', {
     questions: [],
     cashedQuestions: [],
     question: null,
-    cashedQuestion: null,
     error: null,
     loading: false,
   }),
@@ -40,19 +39,12 @@ export const useQuestionStore = defineStore('questionStore', {
       }
     },
     async fetchQuestionDetails(questionId) {
-      if (this.cashedQuestion) {
-        this.question = this.cashedQuestion
-        return
-      }
       this.loading = true
       this.error = null
       try {
         const res = await fetchQuestionDetailsService(questionId)
-        console.log('страница вопроса', res)
-
         if (res) {
           this.question = res.data || []
-          this.cashedQuestion = res.data || []
         }
       } catch (e) {
         this.error = 'Ошибка получения вопроса'
