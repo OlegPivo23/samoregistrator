@@ -19,7 +19,6 @@
             :error-message="errors[field.error]"
             :label="field.label"
             outlined
-            clearable
           />
         </div>
 
