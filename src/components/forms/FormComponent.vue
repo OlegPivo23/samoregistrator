@@ -15,7 +15,8 @@
             :type="field.type"
             :id="field.model"
             class="w-full"
-            :error="!!errors[field.error]"
+            @blur="handleBlur(field.model)"
+            :error="touched[field.model] && !!errors[field.error]"
             :error-message="errors[field.error]"
             :label="field.label"
             outlined
@@ -62,5 +63,7 @@ const {
   isValid,
   handleSubmit,
   switchForm,
+  touched,
+  handleBlur,
 } = useForm()
 </script>
