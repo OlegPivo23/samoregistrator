@@ -74,6 +74,13 @@ export default defineConfig((/* ctx */) => {
     devServer: {
       // https: true,
       open: true, // opens browser window automatically
+      proxy: {
+        '/api': {
+          target: 'http://45.87.247.139:8000', // Убедитесь, что это HTTP URL, если ваш сервер не поддерживает HTTPS
+          changeOrigin: true,
+          secure: false, // Нужно для работы с HTTP API в условиях HTTPS
+        },
+      },
     },
 
     // https://v2.quasar.dev/quasar-cli-vite/quasar-config-file#framework
