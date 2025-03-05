@@ -5,27 +5,35 @@
         <q-spinner-dots color="primary" size="50px" />
       </q-card-section>
       <q-card-section v-else>
-        <h1 class="text-h5">{{ form.title }}</h1>
-        <p class="q-mt-sm text-body2">{{ form.note }}</p>
+        <h1 class="text-h5">Опрос</h1>
 
-        <div v-for="question in form.questions" :key="question.id" class="q-mt-md">
+        <div v-for="question in questions" :key="question.node_id" class="q-mt-md">
           <q-card-section>
-            <h3 class="text-h6">{{ question.body }}</h3>
-            <p class="text-body2">{{ question.note }}</p>
+            <h3 class="text-h6">{{ question.title }}</h3>
 
+            <!-- Обычные вопросы с вариантами ответов -->
             <q-option-group
-              v-if="question.question_type === 'ONE_O'"
+              v-if="question.type === 'ONE'"
               :options="getOptions(question)"
               type="radio"
-              v-model="answers[question.id]"
+              v-model="answers[question.node_id]"
               class="q-mt-sm"
             />
 
             <q-option-group
-              v-else-if="question.question_type === 'MUL_O'"
+              v-else-if="question.type === 'MUL'"
               :options="getOptions(question)"
               type="checkbox"
-              v-model="answers[question.id]"
+              v-model="answers[question.node_id]"
+              class="q-mt-sm"
+            />
+
+            <!-- Текстовый вопрос -->
+            <q-input
+              v-else-if="question.type === 'TEXT'"
+              v-model="answers[question.node_id]"
+              type="text"
+              label="Введите ответ"
               class="q-mt-sm"
             />
           </q-card-section>
@@ -40,44 +48,75 @@
 </template>
 
 <script setup>
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, computed } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuestionStore } from 'src/stores/questionStore'
-import { QCard, QCardSection, QCardActions, QBtn, QOptionGroup } from 'quasar'
+import { QCard, QCardSection, QCardActions, QBtn, QOptionGroup, QInput } from 'quasar'
 import MainLayout from 'src/layouts/MainLayout.vue'
 
-const route = useRoute()
 const questionStore = useQuestionStore()
+const route = useRoute()
+const algorithmId = computed(() => route.query.algorithm_id)
 const loading = ref(true)
-const form = ref({})
+const questions = ref([])
 const answers = ref({})
 
-const initAnswers = () => {
-  form.value.questions?.forEach((question) => {
-    answers.value[question.id] = question.question_type === 'MUL_O' ? [] : null
-  })
-}
-
 const getOptions = (question) => {
-  return question.answers.map((answer) => ({
-    label: answer.body,
-    value: answer.id,
+  return Object.entries(question.answers).map(([id, answer]) => ({
+    label: answer.title,
+    value: Number(id),
   }))
 }
 
 onMounted(async () => {
-  await questionStore.fetchQuestionDetails(route.params.id)
-  form.value = questionStore.question
-  initAnswers()
-  loading.value = false
+  if (algorithmId.value) {
+    await questionStore.fetchQuestionDetails(algorithmId.value)
+    questions.value = questionStore.question.nodes
+    loading.value = false
+  }
 })
 
-const submitAnswer = () => {
-  const formattedAnswers = Object.entries(answers.value).map(([questionId, answerIds]) => ({
-    question_id: Number(questionId),
-    answer_ids: Array.isArray(answerIds) ? answerIds : [answerIds],
-  }))
+function submitAnswer() {
+  const selectedEntries = Object.entries(answers.value)
 
-  console.log('Ответы на форму:', formattedAnswers)
+  if (selectedEntries.length === 0) {
+    console.error('Ошибка: Нет выбранных ответов')
+    return
+  }
+
+  const values = selectedEntries.reduce((acc, [questionId, selected]) => {
+    const question = questions.value.find((q) => q.node_id == questionId)
+    if (!question) return acc
+
+    if (question.type === 'ONE') {
+      acc.push({
+        question_id: Number(questionId),
+        answer_id: Number(selected),
+      })
+    } else if (question.type === 'MUL') {
+      acc.push({
+        question_id: Number(questionId),
+        answer_id: Array.isArray(selected) ? selected : [selected],
+      })
+    } else if (question.type === 'TEXT') {
+      acc.push({
+        question_id: Number(questionId),
+        answer_text: selected,
+      })
+    }
+    return acc
+  }, [])
+
+  const data = {
+    question: questions.value.map((q) => q.node_id),
+    values,
+    response_type: questions.value.map((q) => q.type).toString(),
+    user: 1,
+    algorithm: Number(algorithmId.value),
+  }
+
+  // Отправка данных
+  questionStore.postAnswer(data, algorithmId.value)
+  console.log('Отправляемые данные:', data)
 }
 </script>
