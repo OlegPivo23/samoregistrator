@@ -7,31 +7,32 @@
       <q-card-section v-else>
         <h1 class="text-h5">Опрос</h1>
 
-        <div v-for="question in questions" :key="question.node_id" class="q-mt-md">
+        <!-- Отображаем только текущий вопрос -->
+        <div v-if="currentQuestion" class="q-mt-md">
           <q-card-section>
-            <h3 class="text-h6">{{ question.title }}</h3>
+            <h3 class="text-h6">{{ currentQuestion.title }}</h3>
 
             <!-- Обычные вопросы с вариантами ответов -->
             <q-option-group
-              v-if="question.type === 'ONE'"
-              :options="getOptions(question)"
+              v-if="currentQuestion.type === 'ONE'"
+              :options="getOptions(currentQuestion)"
               type="radio"
-              v-model="answers[question.node_id]"
+              v-model="answers[currentQuestion.node_id]"
               class="q-mt-sm"
             />
 
             <q-option-group
-              v-else-if="question.type === 'MUL'"
-              :options="getOptions(question)"
+              v-else-if="currentQuestion.type === 'MULTIPLE'"
+              :options="getOptions(currentQuestion)"
               type="checkbox"
-              v-model="answers[question.node_id]"
+              v-model="answers[currentQuestion.node_id]"
               class="q-mt-sm"
             />
 
             <!-- Текстовый вопрос -->
             <q-input
-              v-else-if="question.type === 'TEXT'"
-              v-model="answers[question.node_id]"
+              v-else-if="currentQuestion.type === 'TEXT'"
+              v-model="answers[currentQuestion.node_id]"
               type="text"
               label="Введите ответ"
               class="q-mt-sm"
@@ -48,7 +49,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, computed } from 'vue'
+import { ref, onMounted, computed, watch } from 'vue'
 import { useRoute } from 'vue-router'
 import { useQuestionStore } from 'src/stores/questionStore'
 import { QCard, QCardSection, QCardActions, QBtn, QOptionGroup, QInput } from 'quasar'
@@ -61,10 +62,14 @@ const loading = ref(true)
 const questions = ref([])
 const answers = ref({})
 
+// Текущий вопрос
+const currentQuestion = computed(() => questions.value[0])
+
 const getOptions = (question) => {
+  if (!question.answers) return []
   return Object.entries(question.answers).map(([id, answer]) => ({
     label: answer.title,
-    value: Number(id),
+    value: Number(id), // или String(id), если id должен быть строкой
   }))
 }
 
@@ -72,11 +77,27 @@ onMounted(async () => {
   if (algorithmId.value) {
     await questionStore.fetchQuestionDetails(algorithmId.value)
     questions.value = questionStore.question.nodes
+
+    // Инициализация answers для множественного выбора
+    questions.value.forEach((question) => {
+      if (question.type === 'MULTIPLE') {
+        answers.value[question.node_id] = []
+      }
+    })
     loading.value = false
   }
 })
 
-function submitAnswer() {
+watch(
+  [() => answers.value, () => currentQuestion.value],
+  ([newAnswers, newCurrentQuestion]) => {
+    console.log('Текущие ответы:', newAnswers, 'Тип данных:', typeof newAnswers)
+    console.log('Текущий вопрос:', newCurrentQuestion, 'Тип данных:', typeof newCurrentQuestion)
+  },
+  { deep: true },
+)
+
+async function submitAnswer() {
   const selectedEntries = Object.entries(answers.value)
 
   if (selectedEntries.length === 0) {
@@ -89,34 +110,41 @@ function submitAnswer() {
     if (!question) return acc
 
     if (question.type === 'ONE') {
-      acc.push({
-        question_id: Number(questionId),
-        answer_id: Number(selected),
-      })
-    } else if (question.type === 'MUL') {
-      acc.push({
-        question_id: Number(questionId),
-        answer_id: Array.isArray(selected) ? selected : [selected],
-      })
+      acc = selected
+    } else if (question.type === 'MULTIPLE') {
+      acc = Array.isArray(selected) ? selected : [selected]
     } else if (question.type === 'TEXT') {
-      acc.push({
-        question_id: Number(questionId),
-        answer_text: selected,
-      })
+      acc = selected.toString()
     }
     return acc
   }, [])
 
   const data = {
-    question: questions.value.map((q) => q.node_id),
+    question: questions.value[0].node_id,
     values,
     response_type: questions.value.map((q) => q.type).toString(),
     user: 1,
     algorithm: Number(algorithmId.value),
   }
 
-  // Отправка данных
-  questionStore.postAnswer(data, algorithmId.value)
-  console.log('Отправляемые данные:', data)
+  try {
+    const nextQuestion = await questionStore.postAnswer(data, algorithmId.value)
+    if (nextQuestion) {
+      questions.value = [nextQuestion]
+      answers.value = {} // Сбрасываем ответы
+
+      // Добавляем инициализацию для нового вопроса
+      questions.value.forEach((question) => {
+        if (question.type === 'MULTIPLE') {
+          answers.value[question.node_id] = [] // Инициализируем массив
+        }
+      })
+    } else {
+      console.log('Опрос завершен')
+      
+    }
+  } catch (error) {
+    console.error('Ошибка при отправке ответа:', error)
+  }
 }
 </script>

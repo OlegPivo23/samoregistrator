@@ -3,12 +3,6 @@ import cookie from 'cookiejs'
 
 const axiosR = axios.create({
   baseURL: import.meta.env.VITE_SERVER_URL,
-  headers: {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Methods': 'POST, GET, OPTIONS, DELETE, PUT',
-    'Access-Control-Allow-Headers': 'Content-Type, x-requested-with',
-    'Access-Control-Allow-Credentials': true,
-  },
 })
 
 axiosR.interceptors.request.use(

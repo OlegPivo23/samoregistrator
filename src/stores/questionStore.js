@@ -1,5 +1,5 @@
-import axios from 'axios'
 import { defineStore } from 'pinia'
+import axiosR from 'src/api/http'
 import {
   fetchQuestionDetailsService,
   getQuestionsService,
@@ -76,14 +76,16 @@ export const useQuestionStore = defineStore('questionStore', {
         const res = await sendAnswerService(data)
         if (!res) throw new Error('Пустой ответ от сервера')
         this.answer = res
-        console.log('answer equal', this.answer)
-        const nextQuestionRes = await axios.get(
-          `http://45.87.247.139:8000/api/v1/forms/${algorithmId}/questions/next`,
-        )
-        this.questions = nextQuestionRes.data
+
+        // Получаем следующий вопрос
+        const nextQuestionRes = await axiosR.get(`/api/v1/forms/${algorithmId}/questions/next`)
+
+        // Возвращаем следующий вопрос
+        return nextQuestionRes.data
       } catch (e) {
         this.error = 'Ошибка при загрузке вопроса'
         console.error('Ошибка:', e.response?.data || e.message)
+        return null
       } finally {
         this.loading = false
       }
